@@ -3,6 +3,7 @@ const userRoutes = require('./Routes/UserRoutes.js');
 const OrganizationRoutes = require('./Routes/OrganizationRoutes.js');
 const QuestionRoutes = require('./Routes/QuestionRoutes.js');
 const AssignmentRoutes = require('./Routes/AssignmentRoutes.js');
+const TemplateRoutes = require('./Routes/TemplateRoutes.js');
 const path = require('path');
 const connectDB = require('./db/connectDB.js');
 
@@ -18,6 +19,7 @@ app.use('/user', userRoutes);
 app.use('/organization', OrganizationRoutes); 
 app.use('/question', QuestionRoutes);
 app.use('/assignment', AssignmentRoutes);
+app.use('/template', TemplateRoutes);
 
 
 // expose the port to listen to the app 

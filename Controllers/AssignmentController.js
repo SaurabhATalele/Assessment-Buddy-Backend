@@ -14,12 +14,15 @@ const transporter = nodeMailer.createTransport({
 });
 
 const sendMail = async (req, res) => {
-    const { email, subject, text,assignment } = req.body;
+    const { email, subject, text,assignment,deadline } = req.body;
     const user = req.user;
-    
+    const dl = new Date()
+    dl.setDate(dl.getDate()+deadline)
+    const d = new Date(dl)
     try {
+      console.log(user,assignment)
         const data = await Assignment.find({_id:assignment,organization:user.organization});
-        if(!data){
+        if(data.length === 0 || !data){
           res.status(403).json({message:"You are not authorized to schedule assessment"})
         }
         const mailOptions = {
@@ -29,12 +32,49 @@ const sendMail = async (req, res) => {
         html: text,
         };
         await transporter.sendMail(mailOptions);
+        
+        const userDetails = {
+          email:email,
+          assignedOn:Date.now(),
+          deadline: d
+        }
+        const assigned = await Assignment.findOneAndUpdate({_id:assignment,
+          organization:user.organization,
+          },
+          {
+            $push:{AssignedTo:userDetails}
+          });
+        if(!assigned){
+          console.log(assigned)
+          return res.status(500).json({message:"Something went wrong"})
+        }
+
         res.status(200).json({ message: "Mail sent successfully." });
     }
     catch (error) {
         console.log(error);
     }
 };
+
+// update the assignment score into the model
+const updateScore = async (req, res) => {
+  const { id } = req.params;
+  const { score,email } = req.body;
+  try {
+    const assignment = await Assignment.findById(id);
+    const user = assignment.AssignedTo.find((user) => user.email === email);
+    
+     user.score = score;
+     user.attempted = true;
+     await assignment.save();
+    res.status(200).json({ assignment:"Hello" });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+
+
 
 // get all the assignments
 const getAssignments = async (req, res) => {
@@ -104,5 +144,6 @@ module.exports = {
   getAssignmentsByOrg,
   createAssignment,
   deleteAssignment,
-  sendMail
+  sendMail,
+  updateScore
 };

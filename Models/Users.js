@@ -72,6 +72,7 @@ User.methods.GenerateToken = async function(){
         const email = this.email
         const organization = this.organization
         const user = {userId,email,organization};
+        console.log(organization)
         return await jwt.sign(user, secret);
     }catch(err){
         console.log(err)
